@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Engineered Equipment – Predictions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
+  <style>
+    :root{
+      --bg:#0f1216;         /* topbar background */
+      --bg-2:#12161b;       /* dropdown background */
+      --surface:#ffffff;    /* cards */
+      --muted:#6b7280;      /* gray text */
+      --text:#111827;       /* dark text */
+      --brand:#ffc107;      /* brand accent */
+      --accent:#1f8fff;     /* link / highlight */
+      --chip-high:#ffe8d1;  /* confidence chip */
+      --chip-med:#e7efff;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --card-radius:16px;
+      --shadow:0 10px 25px rgba(0,0,0,.06);
+      --border:1px solid #e5e7eb;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:#f5f6f8;color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+
+    /* Top Navigation */
+    .topbar{background:var(--bg);color:#cbd5e1;display:flex;align-items:center;gap:18px;padding:10px 18px;border-bottom:1px solid #000;position:sticky;top:0;z-index:50}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;color:#fff;}
+    .brand .dot{width:10px;height:10px;background:var(--brand);border-radius:2px;display:inline-block;}
+
+    .tabs{display:flex;gap:6px;margin-left:12px}
+    .tab{padding:10px 14px;border-radius:10px;color:#cbd5e1;text-decoration:none;font-weight:600;display:flex;align-items:center;gap:8px}
+    .tab:hover{background:rgba(255,255,255,.06)}
+    .tab.active{background:#1f2937;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+    .tab .chev{opacity:.6}
+
+    .spacer{flex:1}
+    .toolbar{display:flex;align-items:center;gap:8px}
+    .btn-dark{background:#1f2937;color:#fff;border:1px solid #2b3442;border-radius:10px;padding:8px 12px;font-weight:600;cursor:pointer}
+    .btn-dark:hover{filter:brightness(1.05)}
+    .avatar{width:28px;height:28px;border-radius:50%;background:#2b3442;display:inline-block}
+
+    /* Page container */
+    .page{max-width:1200px;margin:24px auto;padding:0 20px 60px}
+
+    /* Headline & filters row */
+    .page-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+    .breadcrumbs{color:#6b7280;font-weight:600}
+    .breadcrumbs strong{color:#111827}
+    .page-head .spacer{flex:1}
+    .btn{background:#fff;border:var(--border);border-radius:12px;padding:10px 12px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+
+    .grid{display:grid;gap:14px}
+
+    /* KPI cards */
+    .kpis{grid-template-columns:repeat(5, minmax(180px,1fr))}
+    .card{background:#fff;border-radius:var(--card-radius);box-shadow:var(--shadow);border:var(--border)}
+    .card .inner{padding:14px 16px}
+    .kpi .label{color:#6b7280;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+    .kpi .value{font-size:28px;font-weight:800;margin-bottom:10px}
+    .chip{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;border:1px solid transparent}
+    .chip .dot{width:8px;height:8px;border-radius:50%}
+    .chip.high{background:var(--chip-high);border-color:#ffcd8a}
+    .chip.high .dot{background:var(--warn)}
+    .chip.med{background:var(--chip-med);border-color:#b7cdfd}
+    .chip.med .dot{background:var(--accent)}
+    .range{color:#6b7280;font-size:12px;margin-top:6px}
+
+    /* Charts */
+    .charts{grid-template-columns:1fr 1fr}
+    .chart-card{position:relative}
+    .chart-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:var(--border)}
+    .chart-title{font-weight:800}
+    .chart-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .icon-btn{border:none;background:transparent;cursor:pointer;padding:6px;border-radius:8px}
+    .icon-btn:hover{background:#f3f4f6}
+    .chart-body{padding:12px 14px}
+    .chart-note{position:absolute;left:52%;top:44%;transform:translate(-50%,-50%);background:#111827;color:#fff;border-radius:8px;padding:6px 10px;font-weight:700;font-size:12px;box-shadow:0 10px 20px rgba(0,0,0,.25);}
+
+    /* Table */
+    .table-card{overflow:auto}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    thead th{position:sticky;top:0;background:#f9fafb;border-bottom:1px solid #e5e7eb;padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;z-index:1}
+    tbody td{border-bottom:1px solid #eee;padding:10px 12px;font-size:13px}
+    tbody tr:hover{background:#f9fafb}
+    .badge{display:inline-block;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:700;border:1px solid #c7ead2;background:#ecfdf5;color:#065f46}
+    .actions{white-space:nowrap}
+    .act{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin-left:4px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
+    .act:hover{background:#f3f4f6}
+
+    /* Right settings panel */
+    .panel{position:fixed;right:-420px;top:0;width:420px;height:100%;background:#fff;border-left:var(--border);box-shadow:-8px 0 24px rgba(0,0,0,.08);transition:all .28s ease;z-index:60;display:flex;flex-direction:column}
+    .panel.open{right:0}
+    .panel header{padding:16px 18px;border-bottom:var(--border);font-weight:800;display:flex;align-items:center}
+    .panel .content{padding:16px 18px;overflow:auto}
+    .form-row{display:grid;grid-template-columns:1fr 120px;gap:12px;margin-bottom:12px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:#6b7280;font-weight:700}
+    .field input,.field select{border:1px solid #e5e7eb;border-radius:10px;padding:10px;background:#fff;font-size:14px}
+    .panel footer{margin-top:auto;padding:16px 18px;border-top:var(--border);display:flex;gap:8px}
+
+    /* Modal viewer */
+    .modal{position:fixed;inset:0;background:rgba(17,24,39,.6);display:none;align-items:center;justify-content:center;z-index:70}
+    .modal.open{display:flex}
+    .modal-card{width:min(1080px,92vw);height:86vh;background:#fff;border-radius:16px;box-shadow:var(--shadow);display:grid;grid-template-columns:300px 1fr}
+    .modal-left{border-right:var(--border);padding:12px;overflow:auto}
+    .modal-left h4{margin:8px 6px 14px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em}
+    .file{padding:8px 10px;border-radius:10px;font-size:14px;cursor:pointer}
+    .file:hover{background:#f3f4f6}
+    .file.active{background:#e5efff;border:1px solid #bfd0ff}
+    .modal-right{display:flex;flex-direction:column}
+    .modal-toolbar{display:flex;align-items:center;gap:8px;padding:10px;border-bottom:var(--border)}
+    .modal-body{flex:1;overflow:auto;padding:10px}
+    .pdf{width:100%;height:100%;border:0;border-radius:12px;background:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 300\"><rect width=\"100%\" height=\"100%\" fill=\"%23f3f4f6\"/><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Inter, Arial\" font-size=\"20\" fill=\"%236b7280\">PDF Preview</text></svg>') center/contain no-repeat}
+    .close-x{margin-left:auto}
+
+    /* Utilities */
+    .muted{color:#6b7280}
+    .small{font-size:12px}
+
+    @media (max-width: 1200px){
+      .kpis{grid-template-columns:repeat(3,1fr)}
+      .charts{grid-template-columns:1fr}
+    }
+    @media (max-width: 720px){
+      .kpis{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> KDS</div>
+    <nav class="tabs" role="tablist">
+      <a class="tab" href="#">Engineered Equipment</a>
+      <a class="tab" href="#">Asset Management <span class="chev">▾</span></a>
+      <a class="tab" href="#">Asset List</a>
+      <a class="tab active" href="#">Predictions</a>
+    </nav>
+    <div class="spacer"></div>
+    <div class="toolbar">
+      <button class="btn-dark" id="btn-settings">Settings</button>
+      <div class="avatar" title="User"></div>
+    </div>
+  </div>
+
+  <main class="page">
+    <div class="page-head">
+      <div class="breadcrumbs"><strong>Equipment Indicatives</strong></div>
+      <div class="spacer"></div>
+      <button class="btn" id="btn-filters">Filters</button>
+    </div>
+
+    <!-- KPI cards -->
+    <section class="grid kpis">
+      <div class="card kpi">
+        <div class="inner">
+          <div class="label">Skid Weight</div>
+          <div class="value" id="kpi-weight">205 lbs</div>
+          <div class="chip high"><span class="dot"></span> Confidence: High</div>
+          <div class="range">Range: 200 - 210</div>
+        </div>
+      </div>
+      <div class="card kpi">
+        <div class="inner">
+          <div class="label">Driver Power Rating</div>
+          <div class="value" id="kpi-driver">25 ft</div>
+          <div class="chip med"><span class="dot"></span> Confidence: Medium</div>
+          <div class="range">Range: 18 - 32</div>
+        </div>
+      </div>
+      <div class="card kpi">
+        <div class="inner">
+          <div class="label">Length</div>
+          <div class="value">10 ft</div>
+          <div class="chip high"><span class="dot"></span> Confidence: High</div>
+          <div class="range">Range: 8 - 12</div>
+        </div>
+      </div>
+      <div class="card kpi">
+        <div class="inner">
+          <div class="label">Width</div>
+          <div class="value">15 ft</div>
+          <div class="chip med"><span class="dot"></span> Confidence: Medium</div>
+          <div class="range">Range: 5 - 25</div>
+        </div>
+      </div>
+      <div class="card kpi">
+        <div class="inner">
+          <div class="label">Height</div>
+          <div class="value">22 ft</div>
+          <div class="chip med"><span class="dot"></span> Confidence: Medium</div>
+          <div class="range">Range: 16 - 28</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="grid charts" style="margin-top:14px">
+      <div class="card chart-card">
+        <div class="chart-head">
+          <div class="chart-title">Correlation Plot</div>
+          <div class="chart-actions small muted">X: <span id="xLabel">Differential Head</span> &nbsp; | &nbsp; Y: <span id="yLabel">Flow Rate</span></div>
+          <div class="spacer"></div>
+          <button class="icon-btn" title="Change axes" id="open-axis">⚙️</button>
+        </div>
+        <div class="chart-body">
+          <canvas id="scatter" height="190"></canvas>
+        </div>
+        <div class="chart-note" id="predictionNote">Prediction (550, 400)</div>
+      </div>
+
+      <div class="card chart-card">
+        <div class="chart-head">
+          <div class="chart-title">Distribution Plot</div>
+          <div class="spacer"></div>
+          <div class="small muted">Skid Weight (lbs)</div>
+        </div>
+        <div class="chart-body">
+          <canvas id="hist" height="190"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card table-card" style="margin-top:14px">
+      <table id="data-table">
+        <thead>
+          <tr>
+            <th>Part Quantity Data</th>
+            <th>Equipment / Pump Type</th>
+            <th>Design Flow</th>
+            <th>Design Flow Units</th>
+            <th>Differential Head</th>
+            <th>Differential Head Units</th>
+            <th>Suction Pressure</th>
+            <th>Suction Pressure Units</th>
+            <th>Discharge Pressure</th>
+            <th>Skid Weight</th>
+            <th>Skid Weight Units</th>
+            <th>Skid Length</th>
+            <th>Skid Width</th>
+            <th>Skid Height</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Axis/Target Settings panel -->
+  <aside class="panel" id="panel-settings">
+    <header>Settings</header>
+    <div class="content">
+      <div class="field">
+        <label>Correlation Plot</label>
+      </div>
+      <div class="field">
+        <label>X Axis</label>
+        <select id="axis-x">
+          <option>Differential Head</option>
+          <option>Flow Rate</option>
+          <option>Suction Pressure</option>
+          <option>Discharge Pressure</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Y Axis</label>
+        <select id="axis-y">
+          <option>Flow Rate</option>
+          <option>Differential Head</option>
+          <option>Suction Pressure</option>
+          <option>Discharge Pressure</option>
+        </select>
+      </div>
+      <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
+      <div class="field">
+        <label>Distribution Plot — Target</label>
+        <select id="target">
+          <option>Skid Weight</option>
+          <option>Driver Power Rating</option>
+          <option>Skid Height</option>
+          <option>Skid Length</option>
+          <option>Skid Width</option>
+        </select>
+      </div>
+    </div>
+    <footer>
+      <button class="btn" id="close-settings">Save & Close</button>
+    </footer>
+  </aside>
+
+  <!-- Filters panel (process criteria) -->
+  <aside class="panel" id="panel-filters">
+    <header>Process Criteria</header>
+    <div class="content">
+      <div class="field">
+        <label>Equipment Type</label>
+        <select id="equip-type"><option>Pump</option><option>Compressor</option></select>
+      </div>
+      <div class="field">
+        <label>Subtype</label>
+        <select id="equip-subtype"><option>OH1</option><option>OH2</option><option>OH3</option></select>
+      </div>
+
+      <div class="field"><label>Flow Rate</label><input id="f-flow" type="number" value="550"/></div>
+      <div class="field"><label>Differential Head</label><input id="f-head" type="number" value="400"/></div>
+      <div class="field"><label>Design Capacity</label><input id="f-capacity" type="number" value="400"/></div>
+      <div class="field"><label>Discharge Pressure</label><input id="f-discharge" type="number" value="114"/></div>
+      <div class="field"><label>Design Temperature</label><input id="f-temp" type="number" value="110"/></div>
+      <div class="field"><label>Specific Gravity</label><input id="f-sg" type="number" step="0.01" value="1.02"/></div>
+    </div>
+    <footer>
+      <button class="btn primary" id="apply-filters">Submit</button>
+      <button class="btn" id="close-filters">Close</button>
+    </footer>
+  </aside>
+
+  <!-- Files modal -->
+  <div class="modal" id="modal-files" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-left">
+        <h4>View Files</h4>
+        <div class="muted small" style="margin:6px 6px 12px">Asset Tag: <strong>P4-1402A</strong></div>
+        <div class="file active">Technical Proposal - ClydeUnion</div>
+        <div class="file">Technical Proposal - Pumpworks</div>
+        <div class="file">Technical Proposal - Ruhrpumpen</div>
+        <div class="file">Technical Proposal - ITT/Goulds</div>
+        <div class="file">DTS - Datasheet - KSB</div>
+        <div class="file">GAD - General Arrangement Drawing - KSB</div>
+        <div class="file">GAD - General Arrangement Drawing - ITT/Goulds</div>
+        <div class="file">TBE - Technical Bid Evaluation</div>
+      </div>
+      <div class="modal-right">
+        <div class="modal-toolbar">
+          <strong class="muted">CENTRIFUGAL PUMP DATASHEET</strong>
+          <div class="spacer"></div>
+          <button class="btn">Zoom -</button>
+          <button class="btn">Zoom +</button>
+          <button class="btn close-x" id="close-modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <iframe class="pdf" title="PDF preview" aria-label="pdf"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Seed data ---
+    const rows = [
+      {part:'P0-1402 / OH2', type:'OH2', flow:83, dfu:'GPM', head:220, dhu:'ft', sp:36.8, spu:'psia', dp:93, weight:1626, wunit:'lbs', L:84.45, W:35.43, H:30.47},
+      {part:'P4-1402 / OH2', type:'OH2', flow:500, dfu:'GPM', head:120, dhu:'ft', sp:0, spu:'psia', dp:74, weight:632, wunit:'lbs', L:60.05, W:35.43, H:30.07},
+      {part:'C-101 ABC / OH2', type:'OH2', flow:580, dfu:'GPM', head:83.72, dhu:'ft', sp:0, spu:'psia', dp:46, weight:334, wunit:'lbs', L:51, W:17, H:47},
+      {part:'P-2304A / OH1', type:'OH1', flow:120, dfu:'GPM', head:19, dhu:'ft', sp:19, spu:'psig', dp:79, weight:168, wunit:'lbs', L:72.5, W:78, H:74.55},
+      {part:'P10444ABC / OH1', type:'OH1', flow:483, dfu:'GPM', head:46, dhu:'ft', sp:19, spu:'psig', dp:79, weight:62, wunit:'lbs', L:72.5, W:76, H:55},
+      {part:'P3457 / OH1', type:'OH1', flow:263, dfu:'GPM', head:60, dhu:'ft', sp:14.7, spu:'psia', dp:134.7, weight:84, wunit:'lbs', L:72.5, W:70, H:64},
+      {part:'P0-1402 / OH1', type:'OH1', flow:100, dfu:'GPM', head:0, dhu:'ft', sp:0, spu:'psia', dp:0, weight:64, wunit:'lbs', L:68.45, W:13, H:42},
+      {part:'P4-1412 / OH2', type:'OH2', flow:320, dfu:'GPM', head:84.64, dhu:'ft', sp:0, spu:'psia', dp:51, weight:290, wunit:'lbs', L:55, W:32, H:43},
+      {part:'P4-1403 / OH2', type:'OH2', flow:1084, dfu:'GPM', head:1084, dhu:'ft', sp:1084, spu:'psia', dp:1084, weight:1084, wunit:'lbs', L:1084, W:1084, H:1084},
+    ];
+
+    // Fill table
+    const tbody = document.querySelector('#data-table tbody');
+    rows.forEach(r=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.part}</td>
+        <td>${r.type}</td>
+        <td>${r.flow}</td>
+        <td>${r.dfu}</td>
+        <td>${r.head}</td>
+        <td>${r.dhu}</td>
+        <td>${r.sp}</td>
+        <td>${r.spu}</td>
+        <td>${r.dp}</td>
+        <td>${r.weight}</td>
+        <td>${r.wunit}</td>
+        <td>${r.L}</td>
+        <td>${r.W}</td>
+        <td>${r.H}</td>
+        <td class="actions">
+          <button class="act view" title="View files">👁️</button>
+          <button class="act" title="Edit">✎</button>
+          <button class="act" title="More">⋯</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+
+    // --- Charts ---
+    function rand(min,max){return Math.round(Math.random()*(max-min)+min)}
+
+    const scatterCtx = document.getElementById('scatter');
+    const histCtx = document.getElementById('hist');
+
+    // Create random correlated points
+    function makePoints(){
+      const pts = [];
+      for(let i=0;i<50;i++){
+        const x = Math.random()*1.6;            // head (ft), 0 - 1.6 (scaled)
+        const y = 0.4 + x + (Math.random()-0.5)/3; // flow rate scaled
+        pts.push({x,y});
+      }
+      return pts;
+    }
+
+    const scatterData = makePoints();
+
+    const scatter = new Chart(scatterCtx, {
+      type:'scatter',
+      data:{
+        datasets:[{
+          label:'Points',
+          data: scatterData,
+          pointRadius:4,
+          borderWidth:0,
+          backgroundColor:'rgba(31,143,255,.85)'
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{enabled:true},
+          annotation:{
+            annotations:{
+              predLine:{
+                type:'line',
+                xMin: 1.0, xMax:1.0,
+                borderColor:'#111827',
+                borderDash:[4,6],
+                borderWidth:2,
+              }
+            }
+          }
+        },
+        scales:{
+          x:{title:{display:true,text:'Differential Head (ft)'}},
+          y:{title:{display:true,text:'Flow Rate (gpm)'}}
+        }
+      }
+    });
+
+    // Histogram data (weights)
+    function makeWeights(){
+      const n = 120; const arr=[];
+      for(let i=0;i<n;i++){
+        // around 450 lbs mean with some skew
+        const v = Math.abs(Math.round(350 + (Math.random()*200) + (Math.random()*Math.random()*120-40)));
+        arr.push(v);
+      }
+      return arr;
+    }
+
+    const weights = makeWeights();
+
+    function buildHistogram(values, bins=20){
+      const min = Math.min(...values), max = Math.max(...values);
+      const step=(max-min)/bins;
+      const counts=new Array(bins).fill(0);
+      values.forEach(v=>{
+        const idx=Math.min(bins-1, Math.floor((v-min)/step));
+        counts[idx]++;
+      });
+      const labels = counts.map((_,i)=> Math.round(min+i*step));
+      const cumulative = counts.reduce((acc, c)=>{acc.push((acc[acc.length-1]||0)+c);return acc;},[]);
+      return {labels, counts, cumulative};
+    }
+
+    const histData = buildHistogram(weights, 30);
+
+    const hist = new Chart(histCtx, {
+      type:'bar',
+      data:{
+        labels:histData.labels,
+        datasets:[{
+          label:'Frequency', data:histData.counts
+        },{
+          type:'line', label:'Cumulative', data:histData.cumulative, yAxisID:'y1', tension:.3, borderColor:'#111827', pointRadius:0
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{title:{display:true,text:'Skid Weight (lbs)'}},
+          y:{title:{display:true,text:'Frequency'}},
+          y1:{position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'Cumulative'}}
+        }
+      }
+    });
+
+    // --- Interactions ---
+    const panelSettings = document.getElementById('panel-settings');
+    const panelFilters = document.getElementById('panel-filters');
+
+    function openPanel(panel){panel.classList.add('open')}
+    function closePanel(panel){panel.classList.remove('open')}
+
+    document.getElementById('btn-settings').onclick = ()=> openPanel(panelSettings);
+    document.getElementById('open-axis').onclick = ()=> openPanel(panelSettings);
+    document.getElementById('close-settings').onclick = ()=> closePanel(panelSettings);
+
+    document.getElementById('btn-filters').onclick = ()=> openPanel(panelFilters);
+    document.getElementById('close-filters').onclick = ()=> closePanel(panelFilters);
+
+    document.getElementById('apply-filters').onclick = ()=>{
+      // Very simple: update headline KPI & note based on inputs
+      const flow = +document.getElementById('f-flow').value || 550;
+      const head = +document.getElementById('f-head').value || 400;
+      document.getElementById('predictionNote').textContent = `Prediction (${flow}, ${head})`;
+      // Slightly nudge the vertical line according to head (scale ~ 0..1.6)
+      const x = Math.min(1.6, Math.max(0, head/400));
+      scatter.options.plugins.annotation.annotations.predLine.xMin = x;
+      scatter.options.plugins.annotation.annotations.predLine.xMax = x;
+      scatter.update();
+      closePanel(panelFilters);
+    }
+
+    // Settings -> change axes
+    const labelMap = {
+      'Differential Head':'Differential Head (ft)',
+      'Flow Rate':'Flow Rate (gpm)',
+      'Suction Pressure':'Suction Pressure (psia)',
+      'Discharge Pressure':'Discharge Pressure (psia)'
+    };
+    const xSel = document.getElementById('axis-x');
+    const ySel = document.getElementById('axis-y');
+
+    function updateAxes(){
+      document.getElementById('xLabel').textContent = xSel.value;
+      document.getElementById('yLabel').textContent = ySel.value;
+      scatter.options.scales.x.title.text = labelMap[xSel.value];
+      scatter.options.scales.y.title.text = labelMap[ySel.value];
+      // Regenerate some points to imply a different relationship
+      scatter.data.datasets[0].data = makePoints();
+      scatter.update();
+    }
+    xSel.addEventListener('change', updateAxes);
+    ySel.addEventListener('change', updateAxes);
+
+    // Table actions -> open modal
+    document.querySelector('#data-table').addEventListener('click', (e)=>{
+      if(e.target.closest('.view')){
+        document.getElementById('modal-files').classList.add('open');
+      }
+    });
+    document.getElementById('close-modal').onclick = ()=>{
+      document.getElementById('modal-files').classList.remove('open');
+    };
+
+    // Allow ESC to close modal/panels
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='Escape'){
+        document.getElementById('modal-files').classList.remove('open');
+        [panelSettings,panelFilters].forEach(p=>p.classList.remove('open'));
+      }
+    });
+  </script>
+</body>
+</html>
