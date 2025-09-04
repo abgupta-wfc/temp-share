@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Equipment Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Bootstrap 4.5 CDN -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body { background: #fafbfc; }
+    .navbar-dark { background: #242527; }
+    .navbar-brand, .navbar-nav .nav-link { color: #fff; }
+    .section-header { font-weight: bold; margin-bottom: 10px;}
+    .card { border-radius: 8px; margin-bottom: 15px; }
+    .card-title { font-size: 2.5rem; font-weight: bold; }
+    .confidence-badge { font-size: 0.95rem; margin-left: 6px; }
+    .main-label { font-size: 1.1rem; color: #434343;}
+    .plot-placeholder { min-height: 230px; display: flex; align-items: center; justify-content: center; background-color: #f3f4f6; color: #949494; border-radius: 8px;}
+    table { background: #fff; }
+    .verified-badge { background: #e3fcdc; color: #319a4a; font-size: 0.9rem; border-radius: 12px; padding: 2px 10px;}
+    .card-header { padding: unset;}
+    .card-body { padding: unset}
+  </style>
+</head>
+<body>
+  <!-- Navbar/Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand" href="#">Engineered Equipment</a>
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item"><a class="nav-link" href="#">Asset Management</a></li>
+      <li class="nav-item"><a class="nav-link" href="#">Asset List</a></li>
+      <li class="nav-item active"><a class="nav-link" href="#"><strong>Predictions</strong></a></li>
+    </ul>
+    <span class="navbar-text ml-auto">
+      <i class="fas fa-cog"></i> &nbsp;
+      <i class="fas fa-sun"></i> &nbsp;
+      <strong>KDS</strong>
+    </span>
+  </nav>
+
+  <!-- Top Section: Job/Asset Details -->
+  <div class="container-fluid mt-2">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <div class="mb-2">
+          <span class="section-header">Equipment Indicatives</span>
+        </div>
+        <div>
+          <span><strong>Job Number:</strong> 20055666</span>
+          <span class="ml-3"><strong>Job Name:</strong> Sempra Cameron T4 FEED Validation</span>
+        </div>
+      </div>
+      <div class="col-md-4 text-right">
+        <div>
+          <strong>Equipment:</strong> Pump
+          <button class="btn btn-outline-primary btn-sm ml-2">Filters</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards Section -->
+    <!-- Stats Cards Section (Updated Layout) -->
+  <div class="container-fluid mt-3">
+    <div class="row">
+      <!-- Skid Metrics Section: 5 cards in 2 rows -->
+      <div class="col-md-4 d-flex flex-column justify-content-between">
+        <div class="d-flex">
+          <div class="card text-center flex-fill mr-2">
+            <div class="card-header">
+              Skid Weight
+            </div>
+            <div class="card-body">
+              <div class="card-title">205 lbs</div>
+              <div>Confidence: <span class="badge badge-warning confidence-badge">High</span></div>
+              <div>Range: 200 - 210</div>
+            </div>
+          </div>
+          <div class="card text-center flex-fill ml-2">
+            <div class="card-header">
+              Driver Power Rating
+            </div>
+            <div class="card-body">
+              <div class="card-title">25 ft</div>
+              <div>Confidence: <span class="badge badge-secondary confidence-badge">Medium</span></div>
+              <div>Range: 18 - 32</div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex mt-3">
+          <div class="card text-center flex-fill mr-2">
+            <div class="card-header">
+              Length
+            </div>
+            <div class="card-body">
+              <div class="card-title">10 ft</div>
+              <div>Confidence: <span class="badge badge-warning confidence-badge">High</span></div>
+              <div>Range: 8 - 12</div>
+            </div>
+          </div>
+          <div class="card text-center flex-fill mx-2">
+            <div class="card-header">
+              Weight
+            </div>
+            <div class="card-body">
+              <div class="card-title">15 ft</div>
+              <div>Confidence: <span class="badge badge-secondary confidence-badge">Medium</span></div>
+              <div>Range: 5 - 25</div>
+            </div>
+          </div>
+          <div class="card text-center flex-fill ml-2">
+            <div class="card-header">
+              Height
+            </div>
+            <div class="card-body">
+              <div class="card-title">22 ft</div>
+              <div>Confidence: <span class="badge badge-secondary confidence-badge">Medium</span></div>
+              <div>Range: 16 - 28</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Correlation Plot Section -->
+      <div class="col-md-4 d-flex flex-column justify-content-center">
+        <div class="card text-center h-100">
+          <div class="card-header">
+              Correlation Plot
+            </div>
+          <div class="card-body">
+            <div class="plot-placeholder h-100 d-flex align-items-center justify-content-center">[Chart Here]</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distribution Plot Section -->
+      <div class="col-md-4 d-flex flex-column justify-content-center">
+        <div class="card text-center h-100">
+          <div class="card-header">
+              Distribution Plot
+            </div>
+          <div class="card-body">
+            <div class="plot-placeholder h-100 d-flex align-items-center justify-content-center">[Chart Here]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Past Quantity Data Table -->
+  <div class="container-fluid mt-3">
+    <div class="section-header">Past Quantity Data</div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>Equipment / Pump Type</th>
+            <th>Design Flow</th>
+            <th>Design Flow Units</th>
+            <th>Differential Head</th>
+            <th>Differential Head Units</th>
+            <th>Suction Pressure</th>
+            <th>Discharge Pressure</th>
+            <!-- Add more columns as needed -->
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>69P-93 | OH2 <span class="verified-badge ml-2">Verified</span></td>
+            <td>83</td><td>GPM</td><td>220</td><td>ft</td><td>0</td><td>0</td>
+          </tr>
+          <tr>
+            <td>P4-1406 | OH2 <span class="verified-badge ml-2">Verified</span></td>
+            <td>153</td><td>GPM</td><td>184</td><td>ft</td><td>36.8</td><td>0</td>
+          </tr>
+          <tr>
+            <td>69P-90 | OH2 <span class="verified-badge ml-2">Verified</span></td>
+            <td>130</td><td>GPM</td><td>158</td><td>ft</td><td>0</td><td>0</td>
+          </tr>
+          <tr>
+            <td>040-000-P-4010 | OH5 <span class="verified-badge ml-2">Verified</span></td>
+            <td>500</td><td>GPM</td><td>83.72</td><td>ft</td><td>0</td><td>0</td>
+          </tr>
+          <tr>
+            <td>124-000-P-2402 | OH2 <span class="verified-badge ml-2">Verified</span></td>
+            <td>188</td><td>GPM</td><td>46</td><td>ft</td><td>0</td><td>0</td>
+          </tr>
+          <tr>
+            <td>376-000-P-A401 | OH1 <span class="verified-badge ml-2">Verified</span></td>
+            <td>483</td><td>GPM</td><td>33</td><td>ft</td><td>0</td><td>0</td>
+          </tr>
+          <!-- Add more rows as needed -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Optional: Font Awesome Icons CDN for navbar icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+  <!-- Bootstrap 4.5 JS, Popper, and jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
